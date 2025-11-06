@@ -4,6 +4,8 @@ import Link from "next/link"
 import CompressImageClient from "@/components/tools/compress-image-client"
 import { ArrowLeft } from "lucide-react"
 
+export const dynamic = "force-dynamic"
+
 export default function CompressImagePage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30">

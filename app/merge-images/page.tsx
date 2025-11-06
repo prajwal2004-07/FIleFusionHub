@@ -3,6 +3,8 @@ import Link from "next/link"
 import MergeImagesClient from "@/components/tools/merge-images-client"
 import { ArrowLeft } from "lucide-react"
 
+export const dynamic = "force-dynamic"
+
 export default function MergeImagesPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30">

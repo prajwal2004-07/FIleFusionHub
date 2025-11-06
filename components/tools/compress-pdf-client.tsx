@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useRef } from "react"
 import { Upload, Download, Loader2, X } from "lucide-react"
 import { PDFDocument } from "pdf-lib"
@@ -43,35 +42,72 @@ export default function CompressPdfClient() {
   }
 
   const compressPdf = async () => {
-    if (!pdfFile) return
+    if (!pdfFile) {
+      alert("Please select a PDF file first")
+      return
+    }
 
     setIsProcessing(true)
     try {
+      console.log("[v0] Starting PDF compression...")
+
+      // Convert file to Uint8Array
       const arrayBuffer = await pdfFile.arrayBuffer()
       const pdfBytes = new Uint8Array(arrayBuffer)
 
-      const pdfDoc = await PDFDocument.load({ pdfBytes })
+      console.log("[v0] PDF file size:", pdfFile.size)
+      console.log("[v0] PDF bytes type:", pdfBytes.constructor.name)
 
+      // Load the PDF document
+      const pdfDoc = await PDFDocument.load(pdfBytes)
+      console.log("[v0] PDF loaded successfully, pages:", pdfDoc.getPageCount())
+
+      // Get all pages and potentially reduce their content streams
+      const pages = pdfDoc.getPages()
+
+      // Compress each page by removing unnecessary metadata
+      for (const page of pages) {
+        // Remove annotations to reduce size
+        if (page.node.Annots) {
+          page.node.Annots = undefined
+        }
+      }
+
+      // Save with compression options
       const compressedBytes = await pdfDoc.save({
         useObjectStreams: true,
       })
 
+      console.log("[v0] Compressed bytes type:", compressedBytes.constructor.name)
+      console.log("[v0] Compressed size:", compressedBytes.length)
+
+      // Create blob and verify it's valid
+      if (!compressedBytes || compressedBytes.length === 0) {
+        throw new Error("Compression resulted in empty file")
+      }
+
       const blob = new Blob([compressedBytes], { type: "application/pdf" })
+      console.log("[v0] Blob created, size:", blob.size)
 
       setCompressedInfo({
         originalSize: pdfFile.size,
         compressedSize: blob.size,
       })
 
+      // Download the compressed file
       const url = URL.createObjectURL(blob)
       const a = document.createElement("a")
       a.href = url
-      a.download = `compressed-${Date.now()}.pdf`
+      a.download = `compressed-${pdfFile.name.replace(".pdf", "")}-${Date.now()}.pdf`
+      document.body.appendChild(a)
       a.click()
+      document.body.removeChild(a)
       URL.revokeObjectURL(url)
+
+      console.log("[v0] PDF compression completed successfully")
     } catch (error) {
-      console.error("PDF compression error:", error)
-      alert("Error compressing PDF. Please try again.")
+      console.error("[v0] PDF compression error:", error)
+      alert(`Error compressing PDF: ${error instanceof Error ? error.message : "Unknown error"}`)
     } finally {
       setIsProcessing(false)
     }
