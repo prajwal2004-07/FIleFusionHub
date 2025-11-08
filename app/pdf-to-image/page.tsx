@@ -1,18 +1,10 @@
 "use client"
 
-import { dynamic as dynamicImport } from "next/dynamic"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
-import { Suspense } from "react"
+import PdfToImageClient from "@/components/tools/pdf-to-image-client"
 
-const PdfToImageClient = dynamicImport(() => import("@/components/tools/pdf-to-image-client"), {
-  ssr: false,
-  loading: () => (
-    <div className="flex items-center justify-center py-12">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-    </div>
-  ),
-})
+export const dynamic = "force-dynamic"
 
 export default function PdfToImagePage() {
   return (
@@ -32,9 +24,7 @@ export default function PdfToImagePage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <Suspense fallback={<div className="text-center py-12">Loading...</div>}>
-          <PdfToImageClient />
-        </Suspense>
+        <PdfToImageClient />
       </div>
     </div>
   )
