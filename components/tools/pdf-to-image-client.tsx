@@ -1,10 +1,8 @@
 "use client"
 
 import type React from "react"
-
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Upload, Download, Loader2, X } from "lucide-react"
-import * as pdfjsLib from "pdfjs-dist"
 
 interface PdfPage {
   pageNum: number
@@ -18,6 +16,15 @@ export default function PdfToImageClient() {
   const [quality, setQuality] = useState(100)
   const [isLoadingPdf, setIsLoadingPdf] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [pdfjsLib, setPdfjsLib] = useState<typeof import("pdfjs-dist") | null>(null)
+
+  useEffect(() => {
+    const initPdfJs = async () => {
+      const pdf = await import("pdfjs-dist")
+      setPdfjsLib(pdf)
+    }
+    initPdfJs().catch(console.error)
+  }, [])
 
   const handleFileSelect = async (files: FileList | null) => {
     if (!files || !files[0]) return
@@ -33,6 +40,11 @@ export default function PdfToImageClient() {
   }
 
   const loadPdfPages = async (file: File) => {
+    if (!pdfjsLib) {
+      alert("PDF library is still loading. Please try again.")
+      return
+    }
+
     setIsLoadingPdf(true)
     try {
       const pdf = pdfjsLib
